@@ -4,20 +4,28 @@
  * Order # 197720 - www.conrad.de
  */
 
+#ifdef ARDUINO_AVR_UNO
 /// Low-active relay outputs.
 /// Bit 0 = relay 1 ... bit 7 = relay 8
 /// Bit set means inverted output.
-constexpr uint8_t invertedRelays = 0xFF;
+constexpr uint8_t invertedRelays = 0x00;
 
 /// Output pins connected to relays.
 /// First entry = relay 1 ... last entry = relay 8
 /// 0 = no relay connected
-constexpr uint8_t relayPins[8] = {2, 3, 4, 5, 0, 0, 0, 0};
+constexpr uint8_t relayPins[8] = {7, 6, 5, 4, 0, 0, 0, 0};
 
 /// Input pins connected to buttons (low active).
 /// First entry = button 1 ... last entry = button 8
 /// 0 = no button connected
+constexpr uint8_t buttonPins[8] = {8, 9, 10, 11, 0, 0, 0, 0};
+
+#else
+// Arduino Nano, ...
+constexpr uint8_t invertedRelays = 0xFF;
+constexpr uint8_t relayPins[8] = {2, 3, 4, 5, 0, 0, 0, 0};
 constexpr uint8_t buttonPins[8] = {6, 7, 8, 9, 0, 0, 0, 0};
+#endif
 
 /// Current address setting.
 uint8_t settingAddress = 1;
