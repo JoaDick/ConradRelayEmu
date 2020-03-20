@@ -12,7 +12,12 @@ constexpr uint8_t invertedRelays = 0xFF;
 /// Output pins connected to relays.
 /// First entry = relay 1 ... last entry = relay 8
 /// 0 = no relay connected
-constexpr uint8_t relayPins[8] = {2, 3, 4, 5, 6, 7, 8, 9};
+constexpr uint8_t relayPins[8] = {2, 3, 4, 5, 0, 0, 0, 0};
+
+/// Input pins connected to buttons (low active).
+/// First entry = button 1 ... last entry = button 8
+/// 0 = no button connected
+constexpr uint8_t buttonPins[8] = {6, 7, 8, 9, 0, 0, 0, 0};
 
 /// Current address setting.
 uint8_t settingAddress = 1;
@@ -27,14 +32,22 @@ uint8_t settingPort = 0x00;
 uint8_t frameData[4] = {0};
 uint8_t frameIndex = 0;
 
+/// Buffer for last button state.
+uint8_t lastButtonState = 0x00;
+
 void setup()
 {
   for (uint8_t i = 0; i < 8; ++i)
   {
-    const uint8_t pin = relayPins[i];
-    if (pin)
+    const uint8_t relayPin = relayPins[i];
+    if (relayPin)
     {
-      pinMode(pin, OUTPUT);
+      pinMode(relayPin, OUTPUT);
+    }
+    const uint8_t buttonPin = buttonPins[i];
+    if (buttonPin)
+    {
+      pinMode(buttonPin, INPUT_PULLUP);
     }
   }
   setRelays(0x00);
@@ -47,17 +60,36 @@ void setup()
 
 void loop()
 {
-  if (Serial.available() > 0)
+  while (Serial.available() > 0)
   {
+    digitalWrite(LED_BUILTIN, 1);
     int inByte = Serial.read();
     frameData[frameIndex] = uint8_t(inByte);
     if (++frameIndex >= 4)
     {
-      digitalWrite(LED_BUILTIN, 1);
       processFrame();
       frameIndex = 0;
       digitalWrite(LED_BUILTIN, 0);
     }
+  }
+
+  const uint8_t buttonState = readButtons();
+  if (buttonState != lastButtonState)
+  {
+    for (uint8_t i = 0; i < 8; ++i)
+    {
+      const uint8_t bitmask = 0x01 << i;
+      const uint8_t buttonBit = buttonState & bitmask;
+      const uint8_t lastbuttonBit = lastButtonState & bitmask;
+      if (buttonBit != lastbuttonBit &&
+          buttonBit != 0)
+      {
+        setRelays(settingPort ^ buttonBit);
+      }
+    }
+
+    lastButtonState = buttonState;
+    delay(20);
   }
 }
 
@@ -193,4 +225,23 @@ void sendFrame(uint8_t cmd, uint8_t addr, uint8_t data)
   txFrame[3] ^= addr;
   txFrame[3] ^= data;
   Serial.write(txFrame, sizeof(txFrame));
+}
+
+uint8_t readButtons()
+{
+  uint8_t retval = 0;
+  uint8_t bit = 0x01;
+  for (uint8_t i = 0; i < 8; ++i)
+  {
+    const uint8_t pin = buttonPins[i];
+    if (pin)
+    {
+      if (digitalRead(pin) == 0)
+      {
+        retval |= bit;
+      }
+    }
+    bit <<= 1;
+  }
+  return retval;
 }
