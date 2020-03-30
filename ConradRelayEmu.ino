@@ -1,7 +1,7 @@
-/** 8 channel relay board.
- * DIY version of the widely used "Conrad relay board",
- * where the communication protocol emulated with an Arduino.
- * Order # 197720 - www.conrad.de
+/** 8 channel relay controller.
+ * DIY version of the widely used "Conrad relay card",
+ * where the communication protocol is emulated with an Arduino.
+ * Item Number 197720 - www.conrad.de
  */
 
 #ifdef ARDUINO_AVR_UNO
