@@ -97,7 +97,7 @@ void loop()
     }
 
     lastButtonState = buttonState;
-    delay(20);
+    delay(50);
   }
 }
 
