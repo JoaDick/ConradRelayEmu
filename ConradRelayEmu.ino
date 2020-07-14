@@ -4,6 +4,8 @@
  * Item Number 197720 - www.conrad.de
  */
 
+#include "RelayBoxDisplay.h"
+
 #ifdef ARDUINO_AVR_UNO
 /// Low-active relay outputs.
 /// Bit 0 = relay 1 ... bit 7 = relay 8
@@ -43,6 +45,9 @@ uint8_t frameIndex = 0;
 /// Buffer for last button state.
 uint8_t lastButtonState = 0x00;
 
+RelayBoxDisplay display;
+
+
 void setup()
 {
   for (uint8_t i = 0; i < 8; ++i)
@@ -64,6 +69,7 @@ void setup()
   digitalWrite(LED_BUILTIN, 0);
 
   Serial.begin(19200);
+  display.begin(settingPort);
 }
 
 void loop()
@@ -215,6 +221,8 @@ void executeCommand(uint8_t cmd, uint8_t data)
 
 void setRelays(uint8_t data)
 {
+  display.setRelayState(data);
+
   settingPort = data;
   data ^= invertedRelays;
   for (uint8_t i = 0; i < 8; ++i)
